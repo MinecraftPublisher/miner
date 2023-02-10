@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Swapcoin</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport"
+        content="target-densitydpi=device-dpi, width=device-width, user-scalable=no, maximum-scale=1, minimum-scale=1" />
+    <link rel="apple-touch-icon" href="dollar.png">
+    <link rel="shortcut-icon" href="dollar.png">
+    <meta name="theme-color" content="#ffedd3" />
+</head>
+
+<body>
+    <h1 onclick="navigator?.serviceWorker?.getRegistration().then(e => {
+        e.unregister()
+        location.reload()
+    }).catch(e => {
+        alert(e)
+        location.reload()
+    })">miner v2.2</h1>
+    <h2>balance: 0 coins</h2>
+    <h2 class="multiplier">multiplier: 0</h2>
+    <h2 class="cap">storage capacity: 0</h2>
+
+    <content>
+        <canvas></canvas>
+        <br><br><br>
+        <button onclick="mine()">mine</button><br>
+        <button class="upgrade" onclick="_upgrade()">upgrade</button>
+    </content>
+
+    <script>
+        let x = JSON.parse(localStorage.getItem('balance') ?? '0')
+        let multiplier = JSON.parse(localStorage.getItem('multiplier') ?? '1')
+        if (x < 0) x = 1000
+        if (multiplier <= 0) multiplier = 1
+
+        window.onerror = (e) => alert(e)
+
+        const h2 = document.querySelector('h2')
+        const cap = document.querySelector('h2.cap')
+        const multi = document.querySelector('h2.multiplier')
+        const upgrade = document.querySelector('button.upgrade')
+        const minor = document.querySelector('button')
+        const canvas = document.querySelector('canvas')
+
+        const calculate = (() => Math.floor(multiplier ** 2))
+
+        const getcap = (() => Math.floor((calculate() * 20)))
+        let __cap = getcap()
+
+        let built = 10
+
+        let first = 0
+        let idle = 0
+
+        const mine_idle = (() => {
+            let __last = JSON.parse(localStorage.getItem('last') ?? (+new Date).toString())
+            let seconds = (+new Date - __last) / 1000
+            let mined = Math.floor(((seconds * 2) * (multiplier / 10)))
+            
+            if(mined > __cap) mined = __cap
+
+            x += mined
+
+            if (first === 0) first = mined
+            if(idle === 0) idle = seconds
+
+            if(x > __cap) x = __cap
+
+            update_display()
+        })
+
+        function secondsToHms(d) {
+            d = Number(d);
+
+            var h = Math.floor(d / 3600)
+            var m = Math.floor(d % 3600 / 60)
+            var s = Math.floor(d % 3600 % 60)
+
+            return ('0' + h).slice(-2) + ":" + ('0' + m).slice(-2) + ":" + ('0' + s).slice(-2)
+        }
+
+        const registerServiceWorker = async () => {
+            if ("serviceWorker" in navigator) {
+                try {
+                    const registration = await navigator.serviceWorker.register("/sw.js", {
+                        scope: "/",
+                    })
+
+                    if (registration.installing) {
+                        console.log("Service worker installing")
+                    } else if (registration.waiting) {
+                        console.log("Service worker installed")
+                    } else if (registration.active) {
+                        alert('now available for offline usage.')
+                        console.log("Service worker active")
+                    }
+                } catch (error) {
+                    console.error(`Registration failed with ${error}`)
+                }
+            }
+        }
+
+        registerServiceWorker()
+
+        const ctx = canvas.getContext('2d')
+
+        const vw = canvas.width
+        const vh = canvas.height
+
+        const whole = [0, 0, vw, vh]
+
+        const update_display = (() => {
+            x = Math.floor(x)
+            multiplier = Math.floor(multiplier)
+
+            if (built-- > 1) {
+                h2.innerHTML = `balance: ${x} coins<br>mined ${first} coins whilst idle for ${secondsToHms(idle)}`
+            } else {
+                h2.innerHTML = `balance: ${x} coins`
+            }
+
+            const sandbox = (() => {
+                let count = 0
+                let damn = x
+                let mult = multiplier
+                const calculate2 = (() => Math.floor(mult ** 2))
+
+                while(damn > calculate2()) {
+                    damn -= calculate2()
+                    mult++
+                    count++
+                }
+
+                return count
+            })
+
+            cap.innerHTML = `storage capacity: ${__cap}<br>time to fill: ${secondsToHms(__cap / (2 * multiplier))}`
+            multi.innerHTML = `multiplier: ${multiplier}`
+            upgrade.innerHTML = `upgrade (${calculate()} coins, x${sandbox()})`
+
+            ctx.fillStyle = `gray`
+            ctx.clearRect(...whole)
+            ctx.fillRect(...whole)
+            ctx.fillStyle = `rgb(183, 255, 183)`
+            ctx.fillRect(0, 0, (vw * (x / __cap)), vh)
+        })
+
+        setInterval(() => {
+            mine_idle()
+        }, 400)
+
+        const save = (() => {
+            mine_idle()
+
+            localStorage.setItem('balance', Math.floor(x))
+            localStorage.setItem('multiplier', Math.floor(multiplier))
+            localStorage.setItem('last', +new Date)
+        })
+
+        let g
+        let f
+
+        minor.addEventListener('touchstart', (e) => {
+            g = setInterval(mine, 100)
+            e.returnValue = false
+        })
+
+        minor.addEventListener('touchend', () => {
+            clearInterval(g)
+            e.returnValue = false
+        })
+
+        save()
+
+        function mine() {
+            if(x >= __cap) return
+
+            x += multiplier
+            save()
+        }
+
+        function _upgrade() {
+            while (x >= calculate()) {
+                x -= calculate()
+                multiplier += 1
+
+                __cap = getcap()
+
+                save()
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-size: 1.2rem;
+
+            background-color: #ffedd3;
+
+            font-family: serif !important;
+        }
+
+        content {
+            position: fixed;
+            bottom: 5rem;
+
+            color: rgb(183, 255, 183);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 0;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 0;
+            margin-top: 0;
+            font-size: 1.5rem;
+        }
+
+        canvas {
+            display: block;
+
+            width: 80vw;
+            height: 5vh;
+            margin-left: 1.8rem;
+        }
+
+        button {
+            user-select: none;
+
+            border: none;
+            outline: none;
+            color: black;
+            background-color: transparent;
+            font-size: 2rem;
+            margin: 0;
+            padding: 0;
+
+            margin-left: 2rem;
+
+            font-family: serif !important;
+        }
+    </style>
+</body>
+
+</html>
