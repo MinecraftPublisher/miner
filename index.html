@@ -30,7 +30,7 @@
         if (x < 0) x = 1000
         if (multiplier <= 0) multiplier = 1
 
-        window.onerror = (e) => alert(e)
+        // window.onerror = (e) => alert(e)
 
         const h2 = document.querySelector('h2')
         const cap = document.querySelector('h2.cap')
@@ -86,21 +86,21 @@
                     })
 
                     if (registration.installing) {
-                        alert('installing offline...')
+                        // alert('installing offline...')
                         console.log("Service worker installing")
                     } else if (registration.waiting) {
-                        alert('waiting for activation...')
+                        // alert('waiting for activation...')
                         console.log("Service worker installed")
                     } else if (registration.active) {
-                        alert('now available for offline usage.')
+                        // alert('now available for offline usage.')
                         console.log("Service worker active")
                     }
                 } catch (error) {
-                    alert('offline version failed, reason: ' + error)
+                    // alert('offline version failed, reason: ' + error)
                     console.error(`Registration failed with ${error}`)
                 }
             } else {
-                alert('incompatible registration.')
+                // alert('incompatible registration.')
             }
         }
 
