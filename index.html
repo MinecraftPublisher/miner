@@ -222,9 +222,10 @@
             ticks.innerHTML = `tps (${f(calculate(tps))} coins, x${sandbox(tps)})`
 
             if (built-- > 1) {
-                tpsui.innerHTML = `tps (${f(calculate(tps))} coins, x${sandbox(tps)})<br><br>mined ${f(Math.floor(first))} coins whilst idle for ${secondsToHms(idle)}`
+                tpsui.innerHTML = `mining speed: ${Math.round((tps) * (multiplier) * 0.05 * 10) / 10} coins/s (${tps} tps)` + 
+                `<br><br>mined ${f(Math.floor(first))} coins whilst idle for ${secondsToHms(idle)}`
             } else {
-                tpsui.innerHTML = `tps (${f(calculate(tps))} coins, x${sandbox(tps)})`
+                tpsui.innerHTML = `mining speed: ${Math.round((tps) * (multiplier) * 0.05 * 10) / 10} coins/s (${tps} tps)`
             }
 
             ctx.fillStyle = `gray`
