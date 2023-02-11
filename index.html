@@ -213,13 +213,13 @@
 
         minor.addEventListener('touchstart', (e) => {
             g = setInterval(mine, 100)
-            // e.returnValue = false
+            e.returnValue = false
         })
 
         minor.addEventListener('touchend', (e) => {
             mine()
             clearInterval(g)
-            // e.returnValue = false
+            e.returnValue = false
         })
 
         save()
