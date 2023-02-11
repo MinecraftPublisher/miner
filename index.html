@@ -9,6 +9,12 @@
     <link rel="apple-touch-icon" href="dollar.png">
     <link rel="shortcut-icon" href="dollar.png">
     <meta name="theme-color" content="#ffedd3" />
+
+    <meta content="Swapcoin" property="og:title" />
+    <meta content="A stupid little mining game thing." property="og:description" />
+    <meta content="https://minecraftpublisher.github.io/miner/" property="og:url" />
+    <meta content="https://minecraftpublisher.github.io/miner/dollar.png" property="og:image" />
+    <meta content="#734f24" data-react-helmet="true" name="theme-color" />
 </head>
 
 <body>
@@ -46,7 +52,7 @@
 
         const calculate = ((mult) => {
             if(mult === tps) return Math.floor(mult ** 3 / 10)
-            else return Math.floor(mult ** 2)
+            else return Math.floor(mult ** 2) > __cap ? __cap : Math.floor(mult ** 2)
         })
 
         const getcap = (() => Math.floor((calculate(multiplier) * 20)))
@@ -157,7 +163,7 @@
                 let istps = mult === tps
                 const calculate2 = (() => {
                     if(istps) return Math.floor(mult ** 3 / 10)
-                    else return Math.floor(mult ** 2)
+                    else return Math.floor(mult ** 2) > __cap ? __cap : Math.floor(mult ** 2)
                 })
 
                 while(damn > calculate2()) {
