@@ -50,13 +50,13 @@
         const minor = document.querySelector('button')
         const canvas = document.querySelector('canvas')
 
+        const getcap = (() => Math.floor((Math.floor(multiplier ** 3 / 10) * 20)))
+        let __cap = getcap()
+
         const calculate = ((mult) => {
             if(mult === tps) return Math.floor(mult ** 3 / 10)
             else return Math.floor(mult ** 2) > __cap ? __cap : Math.floor(mult ** 2)
         })
-
-        const getcap = (() => Math.floor((calculate(multiplier) * 20)))
-        let __cap = getcap()
 
         let built = 10
 
@@ -213,13 +213,13 @@
 
         minor.addEventListener('touchstart', (e) => {
             g = setInterval(mine, 100)
-            e.returnValue = false
+            // e.returnValue = false
         })
 
         minor.addEventListener('touchend', (e) => {
             mine()
             clearInterval(g)
-            e.returnValue = false
+            // e.returnValue = false
         })
 
         save()
@@ -227,8 +227,11 @@
         function mine() {
             if(x >= __cap) return
 
+            console.log(x, multiplier)
             x += multiplier
+            console.log(x)
             save()
+            update_display()
         }
 
         function _upgrade() {
