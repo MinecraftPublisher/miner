@@ -217,15 +217,15 @@
             cap.innerHTML = `storage capacity: ${f(__cap)}<br>time to fill: ${updot}`
             multi.innerHTML = `multiplier: ${f(multiplier)}`
             h2.innerHTML = `balance: ${f(x)} coins`
-            tpsui.innerHTML = `mining speed: ${Math.round((tps) * (multiplier) * 0.05 * 10) / 10} coins/s (${tps} tps)`
             upgrade.innerHTML = `upgrade (${f(calculate(multiplier))} coins, x${sandbox(multiplier)})`
             ticks.innerHTML = `tps (${f(calculate(tps))} coins, x${sandbox(tps)})`
 
+            let farmotted = Math.round((tps) * (multiplier) * 0.05 * 10) / 10
             if (built-- > 1) {
-                tpsui.innerHTML = `mining speed: ${Math.round((tps) * (multiplier) * 0.05 * 10) / 10} coins/s (${tps} tps)` + 
+                tpsui.innerHTML = `mining speed: ${f(farmotted)} coins/s (${tps} tps)` + 
                 `<br><br>mined ${f(Math.floor(first))} coins whilst idle for ${secondsToHms(idle)}`
             } else {
-                tpsui.innerHTML = `mining speed: ${Math.round((tps) * (multiplier) * 0.05 * 10) / 10} coins/s (${tps} tps)`
+                tpsui.innerHTML = `mining speed: ${f(farmotted)} coins/s (${tps} tps)`
             }
 
             ctx.fillStyle = `gray`
