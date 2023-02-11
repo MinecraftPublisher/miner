@@ -16,16 +16,19 @@
     <h2>balance: 0 coins</h2>
     <h2 class="multiplier">multiplier: 0</h2>
     <h2 class="cap">storage capacity: 0</h2>
+    <h2 class="tps">mining speed: 0 coins/s</h2>
 
     <content>
         <canvas></canvas>
         <br><br><br>
         <button onclick="mine()">mine</button><br>
-        <button class="upgrade" onclick="_upgrade()">upgrade</button>
+        <button class="upgrade" onclick="_upgrade()">upgrade</button><br>
+        <button class="tps" onclick="ticksupgrade()">upgrade tps</button>
     </content>
 
     <script>
         let x = JSON.parse(localStorage.getItem('balance') ?? '0')
+        let tps = JSON.parse(localStorage.getItem('tps') ?? '2')
         let multiplier = JSON.parse(localStorage.getItem('multiplier') ?? '1')
         if (x < 0) x = 1000
         if (multiplier <= 0) multiplier = 1
@@ -34,14 +37,19 @@
 
         const h2 = document.querySelector('h2')
         const cap = document.querySelector('h2.cap')
+        const tpsui = document.querySelector('h2.tps')
         const multi = document.querySelector('h2.multiplier')
         const upgrade = document.querySelector('button.upgrade')
+        const ticks = document.querySelector('button.tps')
         const minor = document.querySelector('button')
         const canvas = document.querySelector('canvas')
 
-        const calculate = (() => Math.floor(multiplier ** 2))
+        const calculate = ((mult) => {
+            if(mult === tps) return Math.floor(mult ** 3 / 10)
+            else return Math.floor(mult ** 2)
+        })
 
-        const getcap = (() => Math.floor((calculate() * 20)))
+        const getcap = (() => Math.floor((calculate(multiplier) * 20)))
         let __cap = getcap()
 
         let built = 10
@@ -49,11 +57,35 @@
         let first = 0
         let idle = 0
 
+        let mined_leftover = 0
+        let seconds_leftover = 0
+
         const mine_idle = ((original = true) => {
             let __last = JSON.parse(localStorage.getItem('last') ?? (+new Date).toString())
             let seconds = (+new Date - __last) / 1000
-            let mined = Math.floor(((seconds * 2) * (multiplier / 10)))
             
+            if(seconds < 1) {
+                seconds_leftover += seconds
+                seconds = 0
+            }
+
+            if(seconds_leftover > 1) {
+                seconds += Math.floor(seconds_leftover)
+                seconds_leftover -= Math.floor(seconds_leftover)
+            }
+
+            let mined = (1 / tps) * (multiplier) * seconds
+
+            if(mined < 1) {
+                mined_leftover += mined
+                mined = 0
+            }
+
+            if(mined_leftover > 1) {
+                mined += Math.floor(mined_leftover)
+                mined_leftover -= Math.floor(mined_leftover)
+            }
+
             if(mined > __cap) mined = __cap
 
             x += mined
@@ -64,6 +96,8 @@
             if(x > __cap) x = __cap
 
             if(original) save()
+
+            __last = +new Date
 
             update_display()
         })
@@ -117,17 +151,14 @@
             x = Math.floor(x)
             multiplier = Math.floor(multiplier)
 
-            if (built-- > 1) {
-                h2.innerHTML = `balance: ${x} coins<br>mined ${first} coins whilst idle for ${secondsToHms(idle)}`
-            } else {
-                h2.innerHTML = `balance: ${x} coins`
-            }
-
-            const sandbox = (() => {
+            const sandbox = ((mult) => {
                 let count = 0
                 let damn = x
-                let mult = multiplier
-                const calculate2 = (() => Math.floor(mult ** 2))
+                let istps = mult === tps
+                const calculate2 = (() => {
+                    if(istps) return Math.floor(mult ** 3 / 10)
+                    else return Math.floor(mult ** 2)
+                })
 
                 while(damn > calculate2()) {
                     damn -= calculate2()
@@ -138,9 +169,18 @@
                 return count
             })
 
-            cap.innerHTML = `storage capacity: ${__cap}<br>time to fill: ${secondsToHms(__cap / (2 * multiplier))}`
+            let updot = secondsToHms(Math.floor((((__cap - x) * (1 / tps) * (multiplier)))))
+            cap.innerHTML = `storage capacity: ${__cap}<br>time to fill: ${updot}`
             multi.innerHTML = `multiplier: ${multiplier}`
-            upgrade.innerHTML = `upgrade (${calculate()} coins, x${sandbox()})`
+            tpsui.innerHTML  = `mining speed: ${Math.round((1 / tps) * (multiplier) * 10) / 10} coins/s (${tps} tps)`
+            upgrade.innerHTML = `upgrade (${calculate(multiplier)} coins, x${sandbox(multiplier)})`
+            ticks.innerHTML = `upgrade tps (${calculate(tps)} coins, x${sandbox(tps)})`
+
+            if (built-- > 1) {
+                h2.innerHTML = `balance: ${x} coins<br>mined ${first} coins whilst idle for ${secondsToHms(idle)}`
+            } else {
+                h2.innerHTML = `balance: ${x} coins`
+            }
 
             ctx.fillStyle = `gray`
             ctx.clearRect(...whole)
@@ -151,13 +191,14 @@
 
         setInterval(() => {
             mine_idle()
-        }, 400)
+        }, (1 / tps) * 1000)
 
         const save = (() => {
             mine_idle(false)
 
             localStorage.setItem('balance', Math.floor(x))
             localStorage.setItem('multiplier', Math.floor(multiplier))
+            localStorage.setItem('tps', Math.floor(tps))
             localStorage.setItem('last', +new Date)
         })
 
@@ -185,11 +226,20 @@
         }
 
         function _upgrade() {
-            while (x >= calculate()) {
-                x -= calculate()
+            while (x >= calculate(multiplier)) {
+                x -= calculate(multiplier)
                 multiplier += 1
 
                 __cap = getcap()
+
+                save()
+            }
+        }
+
+        function ticksupgrade() {
+            while (x >= calculate(tps)) {
+                x -= calculate(tps)
+                tps += 1
 
                 save()
             }
