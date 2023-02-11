@@ -80,7 +80,7 @@
                 seconds_leftover -= Math.floor(seconds_leftover)
             }
 
-            let mined = (1 / tps) * (multiplier) * seconds
+            let mined = (tps) * (multiplier) * seconds
 
             if(mined < 1) {
                 mined_leftover += mined
@@ -175,10 +175,10 @@
                 return count
             })
 
-            let updot = secondsToHms(Math.floor((((__cap - x) * (1 / tps) * (multiplier)))))
+            let updot = secondsToHms(Math.floor((((__cap - x) * (tps) * (multiplier)))))
             cap.innerHTML = `storage capacity: ${__cap}<br>time to fill: ${updot}`
             multi.innerHTML = `multiplier: ${multiplier}`
-            tpsui.innerHTML  = `mining speed: ${Math.round((1 / tps) * (multiplier) * 10) / 10} coins/s (${tps} tps)`
+            tpsui.innerHTML  = `mining speed: ${Math.round((tps) * (multiplier) * 10) / 10} coins/s (${tps} tps)`
             upgrade.innerHTML = `upgrade (${calculate(multiplier)} coins, x${sandbox(multiplier)})`
             ticks.innerHTML = `tps (${calculate(tps)} coins, x${sandbox(tps)})`
 
@@ -197,7 +197,7 @@
 
         setInterval(() => {
             mine_idle()
-        }, (1 / tps) * 1000)
+        }, (tps) * 1000)
 
         const save = (() => {
             mine_idle(false)
