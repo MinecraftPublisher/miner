@@ -18,7 +18,8 @@
 </head>
 
 <body>
-    <h1 onclick="navigator?.serviceWorker?.getRegistration().then(e => e?.unregister()); location.reload()">miner v2.2</h1>
+    <h1 onclick="navigator?.serviceWorker?.getRegistration().then(e => e?.unregister()); location.reload()">miner v2.2
+    </h1>
     <h2>balance: 0 coins</h2>
     <h2 class="multiplier">multiplier: 0</h2>
     <h2 class="cap">storage capacity: 0</h2>
@@ -54,7 +55,7 @@
         let __cap = getcap()
 
         const calculate = ((mult) => {
-            if(mult === tps) return Math.floor(mult ** 3 / 10)
+            if (mult === tps) return Math.floor(mult ** 3 / 10)
             else return Math.floor(mult ** 2) > __cap ? __cap : Math.floor(mult ** 2)
         })
 
@@ -69,41 +70,41 @@
         const mine_idle = ((original = true) => {
             let __last = JSON.parse(localStorage.getItem('last') ?? (+new Date).toString())
             let seconds = (+new Date - __last) / 1000
-            
-            if(seconds < 1) {
+
+            if (seconds < 1) {
                 seconds_leftover += seconds
                 seconds = 0
             }
 
-            if(seconds_leftover > 1) {
+            if (seconds_leftover > 1) {
                 seconds += Math.floor(seconds_leftover)
                 seconds_leftover -= Math.floor(seconds_leftover)
             }
 
-            let mined = (tps) * (multiplier) * seconds
+            let mined = (tps) * (multiplier) * seconds * 0.05
 
-            if(mined < 1) {
+            if (mined < 1) {
                 mined_leftover += mined
                 mined = 0
             }
 
-            if(mined_leftover > 1) {
+            if (mined_leftover > 1) {
                 mined += Math.floor(mined_leftover)
                 mined_leftover -= Math.floor(mined_leftover)
             }
 
-            if(mined > __cap) mined = __cap
+            if (mined > __cap) mined = __cap
 
             x += mined
 
             if (first === 0) first = mined
-            if(idle === 0) idle = seconds
+            if (idle === 0) idle = seconds
 
-            if(x > __cap) x = __cap
+            if (x > __cap) x = __cap
 
             update_display()
 
-            if(original) save()
+            if (original) save()
 
             __last = +new Date
         })
@@ -162,11 +163,11 @@
                 let damn = x
                 let istps = mult === tps
                 const calculate2 = (() => {
-                    if(istps) return Math.floor(mult ** 3 / 10)
+                    if (istps) return Math.floor(mult ** 3 / 10)
                     else return Math.floor(mult ** 2) > __cap ? __cap : Math.floor(mult ** 2)
                 })
 
-                while(damn > calculate2()) {
+                while (damn > calculate2()) {
                     damn -= calculate2()
                     mult++
                     count++
@@ -175,17 +176,48 @@
                 return count
             })
 
-            let updot = secondsToHms(Math.floor((((__cap - x) * (tps) * (multiplier)))))
-            cap.innerHTML = `storage capacity: ${__cap}<br>time to fill: ${updot}`
-            multi.innerHTML = `multiplier: ${multiplier}`
-            tpsui.innerHTML  = `mining speed: ${Math.round((tps) * (multiplier) * 10) / 10} coins/s (${tps} tps)`
-            upgrade.innerHTML = `upgrade (${calculate(multiplier)} coins, x${sandbox(multiplier)})`
-            ticks.innerHTML = `tps (${calculate(tps)} coins, x${sandbox(tps)})`
+            function f(num, digits = 0) {
+                const lookup = [
+                    { value: 1, symbol: "" },
+                    { value: 1e3, symbol: "k" },
+                    { value: 1e6, symbol: "M" },
+                    { value: 1e9, symbol: "G" },
+                    { value: 1e12, symbol: "T" },
+                    { value: 1e15, symbol: "P" },
+                    { value: 1e18, symbol: "E" },
+                    { value: 1e21, symbol: "Zk" },
+                    { value: 1e24, symbol: "Zm" },
+                    { value: 1e27, symbol: "Zg" },
+                    { value: 1e30, symbol: "Zt" },
+                    { value: 1e33, symbol: "Zp" },
+                    { value: 1e36, symbol: "Ze" },
+                    { value: 1e39, symbol: "Qk" },
+                    { value: 1e42, symbol: "Qm" },
+                    { value: 1e45, symbol: "Qg" },
+                    { value: 1e48, symbol: "Qt" },
+                    { value: 1e51, symbol: "Qp" },
+                    { value: 1e54, symbol: "Qe" },
+                ];
+
+                const rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
+                var item = lookup.slice().reverse().find(function (item) {
+                    return num >= item.value;
+                });
+
+                return item ? (num / item.value).toFixed(digits).replace(rx, "$1") + item.symbol : "0";
+            }
+
+            let updot = secondsToHms(Math.floor((((__cap - x) / ((tps) * 0.05 * (multiplier))))))
+            cap.innerHTML = `storage capacity: ${f(__cap)}<br>time to fill: ${updot}`
+            multi.innerHTML = `multiplier: ${f(multiplier)}`
+            tpsui.innerHTML = `mining speed: ${Math.round((tps) * (multiplier) * 0.05 * 10) / 10} coins/s (${tps} tps)`
+            upgrade.innerHTML = `upgrade (${f(calculate(multiplier))} coins, x${sandbox(multiplier)})`
+            ticks.innerHTML = `tps (${f(calculate(tps))} coins, x${sandbox(tps)})`
 
             if (built-- > 1) {
-                h2.innerHTML = `balance: ${x} coins<br>mined ${first} coins whilst idle for ${secondsToHms(idle)}`
+                h2.innerHTML = `balance: ${f(x)} coins<br>mined ${f(Math.floor(first))} coins whilst idle for ${secondsToHms(idle)}`
             } else {
-                h2.innerHTML = `balance: ${x} coins`
+                h2.innerHTML = `balance: ${f(x)} coins`
             }
 
             ctx.fillStyle = `gray`
@@ -197,7 +229,8 @@
 
         setInterval(() => {
             mine_idle()
-        }, (tps) * 1000)
+            update_display()
+        }, 100)
 
         const save = (() => {
             mine_idle(false)
@@ -225,7 +258,7 @@
         save()
 
         function mine() {
-            if(x >= __cap) return
+            if (x >= __cap) return
 
             console.log(x, multiplier)
             x += multiplier
