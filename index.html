@@ -18,7 +18,7 @@
 </head>
 
 <body>
-    <h1 onclick="navigator?.serviceWorker?.getRegistration().then(e => e?.unregister()); location.reload()">miner v2.2
+    <h1 onclick="navigator?.serviceWorker?.getRegistration().then(e => e?.unregister()); location.reload()">miner v3
     </h1>
     <h2>balance: 0 coins</h2>
     <h2 class="multiplier">multiplier: 0</h2>
@@ -34,11 +34,17 @@
     </content>
 
     <script>
+        if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) document.querySelector('meta[name="theme-color"]').setAttribute('content', '#111')
+
         let x = JSON.parse(localStorage.getItem('balance') ?? '0')
         let tps = JSON.parse(localStorage.getItem('tps') ?? '2')
         let multiplier = JSON.parse(localStorage.getItem('multiplier') ?? '1')
         if (x < 0) x = 1000
         if (multiplier <= 0) multiplier = 1
+
+        window.addEventListener('select', (e) => {
+            e.returnValue = false
+        })
 
         // window.onerror = (e) => alert(e)
 
@@ -59,7 +65,7 @@
             else return Math.floor(mult ** 2) > __cap ? __cap : Math.floor(mult ** 2)
         })
 
-        let built = 10
+        let built = 100
 
         let first = 0
         let idle = 0
@@ -210,14 +216,15 @@
             let updot = secondsToHms(Math.floor((((__cap - x) / ((tps) * 0.05 * (multiplier))))) / 2)
             cap.innerHTML = `storage capacity: ${f(__cap)}<br>time to fill: ${updot}`
             multi.innerHTML = `multiplier: ${f(multiplier)}`
+            h2.innerHTML = `balance: ${f(x)} coins`
             tpsui.innerHTML = `mining speed: ${Math.round((tps) * (multiplier) * 0.05 * 10) / 10} coins/s (${tps} tps)`
             upgrade.innerHTML = `upgrade (${f(calculate(multiplier))} coins, x${sandbox(multiplier)})`
             ticks.innerHTML = `tps (${f(calculate(tps))} coins, x${sandbox(tps)})`
 
             if (built-- > 1) {
-                h2.innerHTML = `balance: ${f(x)} coins<br>mined ${f(Math.floor(first))} coins whilst idle for ${secondsToHms(idle)}`
+                tpsui.innerHTML = `tps (${f(calculate(tps))} coins, x${sandbox(tps)})<br><br>mined ${f(Math.floor(first))} coins whilst idle for ${secondsToHms(idle)}`
             } else {
-                h2.innerHTML = `balance: ${f(x)} coins`
+                tpsui.innerHTML = `tps (${f(calculate(tps))} coins, x${sandbox(tps)})`
             }
 
             ctx.fillStyle = `gray`
@@ -290,23 +297,40 @@
 
     <style>
         body {
-            font-size: 1.2rem;
+            font-family: monospace, serif !important;
+        }
 
-            background-color: #ffedd3;
+        @media (prefers-color-scheme: light) {
+            body {
+                background-color: #ffedd3;
+                color: black;
+            }
 
-            font-family: serif !important;
+            button {
+                color: black;
+            }
+        }
+
+        @media (prefers-color-scheme: dark) {
+            html {
+                background: #111;
+                color: #ffedd3;
+            }
+
+            button {
+                color: #ffedd3;
+            }
         }
 
         content {
             position: fixed;
             bottom: 5rem;
-
-            color: rgb(183, 255, 183);
         }
 
         h1 {
             text-align: center;
             margin-bottom: 0;
+            font-size: 2rem;
         }
 
         h2 {
@@ -319,9 +343,9 @@
         canvas {
             display: block;
 
-            width: 80vw;
+            width: 85vw;
             height: 5vh;
-            margin-left: 1.8rem;
+            margin-left: 1rem;
         }
 
         button {
@@ -329,15 +353,16 @@
 
             border: none;
             outline: none;
-            color: black;
             background-color: transparent;
-            font-size: 2rem;
+            font-size: 1.2rem;
             margin: 0;
             padding: 0;
 
-            margin-left: 2rem;
+            text-align: left;
 
-            font-family: serif !important;
+            margin-left: 1rem;
+
+            font-family: monospace, serif !important;
         }
     </style>
 </body>
