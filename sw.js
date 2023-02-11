@@ -18,4 +18,6 @@ self.addEventListener("install", (event) => {
             "/sw.js"
         ])
     )
+
+    alert('offline version now available.')
 })
