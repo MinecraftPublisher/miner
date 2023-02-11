@@ -207,7 +207,7 @@
                 return item ? (num / item.value).toFixed(digits).replace(rx, "$1") + item.symbol : "0";
             }
 
-            let updot = secondsToHms(Math.floor((((__cap - x) / ((tps) * 0.05 * (multiplier))))))
+            let updot = secondsToHms(Math.floor((((__cap - x) / ((tps) * 0.05 * (multiplier))))) / 2)
             cap.innerHTML = `storage capacity: ${f(__cap)}<br>time to fill: ${updot}`
             multi.innerHTML = `multiplier: ${f(multiplier)}`
             tpsui.innerHTML = `mining speed: ${Math.round((tps) * (multiplier) * 0.05 * 10) / 10} coins/s (${tps} tps)`
@@ -261,7 +261,7 @@
             if (x >= __cap) return
 
             console.log(x, multiplier)
-            x += multiplier
+            x += (multiplier ** 2) / 2
             console.log(x)
             save()
             update_display()
