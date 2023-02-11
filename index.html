@@ -180,7 +180,7 @@
             multi.innerHTML = `multiplier: ${multiplier}`
             tpsui.innerHTML  = `mining speed: ${Math.round((1 / tps) * (multiplier) * 10) / 10} coins/s (${tps} tps)`
             upgrade.innerHTML = `upgrade (${calculate(multiplier)} coins, x${sandbox(multiplier)})`
-            ticks.innerHTML = `upgrade tps (${calculate(tps)} coins, x${sandbox(tps)})`
+            ticks.innerHTML = `tps (${calculate(tps)} coins, x${sandbox(tps)})`
 
             if (built-- > 1) {
                 h2.innerHTML = `balance: ${x} coins<br>mined ${first} coins whilst idle for ${secondsToHms(idle)}`
